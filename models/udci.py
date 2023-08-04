@@ -83,5 +83,5 @@ class U_DCI(nn.Module):
     #     return h_1
 
     def get_emb(self, feats, adj):
-        h_1 = self.emb_module(feats, adj)
+        h_1 = self.module(feats, adj)
         return h_1
