@@ -1,10 +1,12 @@
 import numpy as np
 from sklearn.model_selection import StratifiedKFold
+import random
 
 import scipy.sparse as sp
 import torch
 
-def load_data(datasets, num_folds):
+# def load_data(datasets, num_folds):
+def load_data(datasets, num_fold, ratio=0.6):
     # load the adjacency
     adj = np.loadtxt('./data/'+datasets+'.txt')
     num_user = len(set(adj[:, 0]))
@@ -25,11 +27,26 @@ def load_data(datasets, num_folds):
 
     # split the train_set and validation_set
     split_idx = []
-    skf = StratifiedKFold(n_splits=num_folds, shuffle=True, random_state=0)
-    for (train_idx, test_idx) in skf.split(y, y):
+    if num_fold != 1:
+        skf = StratifiedKFold(n_splits=num_fold, shuffle=True, random_state=0)
+        for (train_idx, test_idx) in skf.split(y, y):
+            print(f'shape of train_idx: {train_idx.shape}, shape of test_idx: {test_idx.shape}')
+            split_idx.append((train_idx, test_idx))
+
+    elif num_fold == 1:
+   # split the train_set and test_set
+        one_label = np.where(label[:, 1] == 1)[0]
+        zero_label = np.where(label[:, 1] == 0)[0]
+        one_label = np.random.choice(one_label, round(len(one_label)* ratio), replace=False)
+        zero_label = np.random.choice(zero_label, round(len(zero_label)* ratio), replace=False)
+        
+        train_idx = np.concatenate((one_label, zero_label))
+        test_idx = np.setdiff1d(range(num_user), train_idx)
+        print(f'shape of train_idx: {train_idx.shape}, shape of test_idx: {test_idx.shape}')
         split_idx.append((train_idx, test_idx))
-   
-    # load initial features
+    # 随机取one_label的20%作为test_idx
+
+    # load initial featuresy
     feats = np.load('./features/'+datasets+'_feature64.npy')
 
     return edge_index, feats, split_idx, label, nb_nodes
