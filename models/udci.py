@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 # from layers import U_GCN, AvgReadout, Discriminator
-from layers import U_GCN, GraphCNN, AvgReadout, Discriminator
+from layers import U_GCN, GraphCNN, GCN, AvgReadout, Discriminator
 import sys
 sys.path.append("models/")
 
@@ -25,7 +25,8 @@ class U_DCI(nn.Module):
             self.module = U_GCN(config_emb['input_dim'], config_emb['out_features'], config_emb['final_features'], config_emb['dropout'], config_emb['alpha'], config_emb['nheads'])
         elif emb_module == 'GIN':
             self.module = GraphCNN(config_emb['num_layers'], config_emb['num_mlp_layers'], config_emb['input_dim'], config_emb['hidden_dim'], config_emb['neighbor_pooling_type'], device)
-
+        elif emb_module == 'GCN':
+            self.module = GCN(config_emb['input_dim'], config_emb['nhid'], config_emb['out'], config_emb['dropout'])
 
 
 

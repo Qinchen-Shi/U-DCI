@@ -1,5 +1,5 @@
 import torch.nn as nn
-from layers import GraphCNN, MLP, U_GCN
+from layers import GraphCNN, MLP, U_GCN, GCN
 import torch.nn.functional as F
 import sys
 sys.path.append("models/")
@@ -43,8 +43,10 @@ class Classifier(nn.Module):
         super(Classifier, self).__init__()
         if emb_module == 'U_GCN':
             self.emb_module = U_GCN(config_emb['input_dim'], config_emb['out_features'], config_emb['final_features'], config_emb['dropout'], config_emb['alpha'], config_emb['nheads'])
-        if emb_module == 'GIN':
+        elif emb_module == 'GIN':
             self.emb_module = GraphCNN(config_emb['num_layers'], config_emb['num_mlp_layers'], config_emb['input_dim'], config_emb['hidden_dim'], config_emb['neighbor_pooling_type'], device)
+        elif emb_module == 'GCN':
+            self.emb_module = GCN(config_emb['input_dim'], config_emb['nhid'], config_emb['out'], config_emb['dropout'])
         
         self.linear_prediction = nn.Linear(hidden_dim, 1)
         self.final_dropout = final_dropout
