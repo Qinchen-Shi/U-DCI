@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 # from layers import U_GCN, AvgReadout, Discriminator
-from layers import U_GCN, GraphCNN, GCN, AvgReadout, Discriminator
+from layers import U_GCN, GraphCNN, GCN, GAT, GraphSAGE, AvgReadout, Discriminator
 import sys
 sys.path.append("models/")
 
@@ -27,14 +27,10 @@ class U_DCI(nn.Module):
             self.module = GraphCNN(config_emb['num_layers'], config_emb['num_mlp_layers'], config_emb['input_dim'], config_emb['hidden_dim'], config_emb['neighbor_pooling_type'], device)
         elif emb_module == 'GCN':
             self.module = GCN(config_emb['input_dim'], config_emb['nhid'], config_emb['out'], config_emb['dropout'])
-
-
-
-
-
-
-
-
+        elif emb_module == 'GAT':
+            self.module = GAT(config_emb['input_dim'], config_emb['nhid'], config_emb['out'], config_emb['dropout'])
+        elif emb_module == 'GraphSAGE':
+            self.module = GraphSAGE(config_emb['input_dim'], config_emb['nhid'], config_emb['out'], config_emb['dropout'])
 
 
 
@@ -46,7 +42,7 @@ class U_DCI(nn.Module):
         h_2 = self.module(shuf_feats, adj)
 
         loss = 0
-        batch_size = 1 # hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
+        batch_size = 1
         criterion = nn.BCEWithLogitsLoss() 
         for i in range(cluster_num):    #相比较DGI来说就是这里套了一个循环按cluster来跑的
             node_idx = cluster_info[i]  # cluster_info存的是每个cluster的信息
@@ -66,16 +62,6 @@ class U_DCI(nn.Module):
             loss += loss_tmp
 
         return loss / cluster_num   # 返回loss的平均值
-
-
-
-
-
-
-
-
-
-
 
 
 

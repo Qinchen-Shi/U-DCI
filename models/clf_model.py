@@ -1,5 +1,5 @@
 import torch.nn as nn
-from layers import GraphCNN, MLP, U_GCN, GCN
+from layers import GraphCNN, MLP, U_GCN, GCN, GAT, GraphSAGE
 import torch.nn.functional as F
 import sys
 sys.path.append("models/")
@@ -47,7 +47,11 @@ class Classifier(nn.Module):
             self.emb_module = GraphCNN(config_emb['num_layers'], config_emb['num_mlp_layers'], config_emb['input_dim'], config_emb['hidden_dim'], config_emb['neighbor_pooling_type'], device)
         elif emb_module == 'GCN':
             self.emb_module = GCN(config_emb['input_dim'], config_emb['nhid'], config_emb['out'], config_emb['dropout'])
-        
+        elif emb_module == 'GAT':
+            self.emb_module = GAT(config_emb['input_dim'], config_emb['nhid'], config_emb['out'], config_emb['dropout'])
+        elif emb_module == 'GraphSAGE':
+            self.emb_module = GraphSAGE(config_emb['input_dim'], config_emb['nhid'], config_emb['out'], config_emb['dropout'])
+
         self.linear_prediction = nn.Linear(hidden_dim, 1)
         self.final_dropout = final_dropout
 
