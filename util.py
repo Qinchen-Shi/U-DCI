@@ -19,11 +19,11 @@ def load_data(datasets, num_fold, ratio=0.8):
     # load the user label
     label = np.loadtxt('./data/'+datasets+'_label.txt')
     y = label[:, 1]
-    print('Ratio of fraudsters: ', np.sum(y) / len(y))
-    print('Number of edges: ', edge_index.shape[1])
-    print('Number of users: ', num_user)
-    print('Number of objects: ', num_object)
-    print('Number of nodes: ', nb_nodes)
+    # print('Ratio of fraudsters: ', np.sum(y) / len(y))
+    # print('Number of edges: ', edge_index.shape[1])
+    # print('Number of users: ', num_user)
+    # print('Number of objects: ', num_object)
+    # print('Number of nodes: ', nb_nodes)
 
     # split the train_set and validation_set
     split_idx = []
@@ -46,8 +46,8 @@ def load_data(datasets, num_fold, ratio=0.8):
         test_idx = np.setdiff1d(range(num_user), train_idx)
         split_idx.append((train_idx, test_idx))
 
-    print(f'Nodes in training set: {len(split_idx[0][0])}')
-    print(f'Nodes in test set: {len(split_idx[0][1])}')
+    # print(f'Nodes in training set: {len(split_idx[0][0])}')
+    # print(f'Nodes in test set: {len(split_idx[0][1])}')
 
     # load initial featuresy
     feats = np.load('./features/'+datasets+'_feature64.npy')

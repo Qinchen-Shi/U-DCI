@@ -70,7 +70,7 @@ class GraphCNN(nn.Module):
         if self.attention:
             for layer in range(self.num_layers):
                 h = self.next_layer(h, layer, Adj_block = adj)
-                h, _ = self.att_module(h)
+                h = self.att_module(h)
         else:
             for layer in range(self.num_layers):
                 h = self.next_layer(h, layer, Adj_block = adj)

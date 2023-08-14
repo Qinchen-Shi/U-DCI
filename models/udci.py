@@ -70,7 +70,7 @@ class U_DCI(nn.Module):
             loss_tmp = criterion(ret, lbl)  # 用loss function计算loss，这里用的是BCEWithLogitsLoss，ret是分数，lbl是标签
             loss += loss_tmp
 
-        return loss / cluster_num   # 返回loss的平均值
+        return loss / cluster_num  # 返回loss的平均值
 
 
 
