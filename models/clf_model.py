@@ -39,23 +39,32 @@ sys.path.append("models/")
 
 
 class Classifier(nn.Module):
-    def __init__(self, emb_module, hidden_dim, final_dropout, config_emb, device):
+    def __init__(self, emb_module, hidden_dim, final_dropout, config_emb, attention, device):
         super(Classifier, self).__init__()
-        if emb_module == 'U_GCN':
-            self.emb_module = U_GCN(config_emb['input_dim'], config_emb['out_features'], config_emb['final_features'], config_emb['dropout'], config_emb['alpha'], config_emb['nheads'])
-        elif emb_module == 'GIN':
-            self.emb_module = GraphCNN(config_emb['num_layers'], config_emb['num_mlp_layers'], config_emb['input_dim'], config_emb['hidden_dim'], config_emb['neighbor_pooling_type'], device)
-        elif emb_module == 'GCN':
-            self.emb_module = GCN(config_emb['input_dim'], config_emb['nhid'], config_emb['out'], config_emb['dropout'])
-        elif emb_module == 'GAT':
-            self.emb_module = GAT(config_emb['input_dim'], config_emb['nhid'], config_emb['out'], config_emb['dropout'])
-        elif emb_module == 'GraphSAGE':
-            self.emb_module = GraphSAGE(config_emb['input_dim'], config_emb['nhid'], config_emb['out'], config_emb['dropout'])
+    #     if emb_module == 'U_GCN':
+    #         self.emb_module = U_GCN(config_emb['input_dim'], config_emb['out_features'], config_emb['final_features'], config_emb['dropout'], config_emb['alpha'], config_emb['nheads'])
+    #     elif emb_module == 'GIN':
+    #         self.emb_module = GraphCNN(config_emb['num_layers'], config_emb['num_mlp_layers'], config_emb['input_dim'], config_emb['hidden_dim'], config_emb['neighbor_pooling_type'], device)
+    #     elif emb_module == 'GCN':
+    #         self.emb_module = GCN(config_emb['input_dim'], config_emb['nhid'], config_emb['out'], config_emb['dropout'])
+    #     elif emb_module == 'GAT':
+    #         self.emb_module = GAT(config_emb['input_dim'], config_emb['nhid'], config_emb['out'], config_emb['dropout'])
+    #     elif emb_module == 'GraphSAGE':
+    #         self.emb_module = GraphSAGE(config_emb['input_dim'], config_emb['nhid'], config_emb['out'], config_emb['dropout']
+
+        module = {
+            'U_GCN': U_GCN,
+            'GIN': GraphCNN,
+            'GCN': GCN,
+            'GAT': GAT,
+            'GraphSAGE': GraphSAGE
+        }
+        self.module = module[emb_module](config_emb, attention, device)
 
         self.linear_prediction = nn.Linear(hidden_dim, 1)
         self.final_dropout = final_dropout
 
     def forward(self, feats, adj):
-        h_1 = self.emb_module(feats, adj)
+        h_1 = self.module(feats, adj)
         score_final_layer = F.dropout(self.linear_prediction(h_1), self.final_dropout, training = self.training)
         return score_final_layer
