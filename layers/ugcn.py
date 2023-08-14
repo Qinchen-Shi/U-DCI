@@ -38,4 +38,5 @@ class U_GCN(nn.Module):
         emb2 = self.SGAT2(feature, adj[1])
         emb = torch.stack([emb1, emb2], dim=1)
         emb, _ = self.attention(emb)
+        emb = emb.sum(1)
         return emb

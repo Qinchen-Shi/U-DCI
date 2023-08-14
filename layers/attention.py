@@ -18,7 +18,8 @@ class Attention(nn.Module): # 它会得到一个注意力系数
         # print(f'shape of w: {w.shape}')
         beta = torch.softmax(w, dim=1)  # 183*3*1，每个beta代表一个node在一种module下的注意力权重
         # print(f'beta: {beta.shape}')
-        output = (beta * z).sum(1)  #beta是系数乘上了GAT处理过的adj，得到的结果是每个node在一种module下的特征，然后在node维度上求和，就变成了三种module的特征和
+        # output = (beta * z).sum(1)  #beta是系数乘上了GAT处理过的adj，得到的结果是每个node在一种module下的特征，然后在node维度上求和，就变成了三种module的特征和
         # print(f'output: {output.shape}')
+        output = (beta * z)
         # print(output)
         return output, beta
