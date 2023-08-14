@@ -6,3 +6,4 @@ from .ugcn import U_GCN
 from .gcn import GCN
 from .gat import GAT
 from .graphsage import GraphSAGE
+from .attention import Attention

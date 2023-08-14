@@ -6,7 +6,7 @@ import scipy.sparse as sp
 import torch
 
 # def load_data(datasets, num_folds):
-def load_data(datasets, num_fold, ratio=0.6):
+def load_data(datasets, num_fold, ratio=0.8):
     # load the adjacency
     adj = np.loadtxt('./data/'+datasets+'.txt')
     num_user = len(set(adj[:, 0]))
@@ -27,24 +27,27 @@ def load_data(datasets, num_fold, ratio=0.6):
 
     # split the train_set and validation_set
     split_idx = []
-    if num_fold != 1:
-        skf = StratifiedKFold(n_splits=num_fold, shuffle=True, random_state=0)
-        for (train_idx, test_idx) in skf.split(y, y):
-            print(f'shape of train_idx: {train_idx.shape}, shape of test_idx: {test_idx.shape}')
-            split_idx.append((train_idx, test_idx))
+    all_one_label = np.where(label[:, 1] == 1)[0]
+    all_zero_label = np.where(label[:, 1] == 0)[0]
+    
+    # if num_fold != 1:
+    #     skf = StratifiedKFold(n_splits=num_fold, shuffle=True, random_state=0)
+    #     for (train_idx, test_idx) in skf.split(y, y):
+    #         print(f'shape of train_idx: {train_idx.shape}, shape of test_idx: {test_idx.shape}')
+    #         split_idx.append((train_idx, test_idx))
 
-    elif num_fold == 1:
+    # elif num_fold == 1:
    # split the train_set and test_set
-        one_label = np.where(label[:, 1] == 1)[0]
-        zero_label = np.where(label[:, 1] == 0)[0]
-        one_label = np.random.choice(one_label, round(len(one_label)* ratio), replace=False)
-        zero_label = np.random.choice(zero_label, round(len(zero_label)* ratio), replace=False)
-        
+
+    for i in range(num_fold):
+        one_label = np.random.choice(all_one_label, round(len(all_one_label)* ratio), replace=False)
+        zero_label = np.random.choice(all_zero_label, round(len(all_zero_label)* ratio), replace=False)
         train_idx = np.concatenate((one_label, zero_label))
         test_idx = np.setdiff1d(range(num_user), train_idx)
-        print(f'shape of train_idx: {train_idx.shape}, shape of test_idx: {test_idx.shape}')
         split_idx.append((train_idx, test_idx))
-    # 随机取one_label的20%作为test_idx
+
+    print(f'Nodes in training set: {len(split_idx[0][0])}')
+    print(f'Nodes in test set: {len(split_idx[0][1])}')
 
     # load initial featuresy
     feats = np.load('./features/'+datasets+'_feature64.npy')
@@ -103,7 +106,7 @@ def load_graph(dataset, num_nodes, emb_module, device):
     adj = preprocess_neighbors_sumavepool(dataset, num_nodes)    # 这里的sadj是一个带自环的稀疏矩阵
     adj2 = None
     
-    if emb_module == 'U_DCI':
+    if emb_module == 'U_GCN':
         adj2 = torch.matmul(adj.to_dense(), adj.to_dense())  # 把sadj转成dense，然后做矩阵乘法，得到sadj2
         adj2 = adj2.to_sparse()   # 再把sadj2转成稀疏矩阵
 

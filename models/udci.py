@@ -14,23 +14,32 @@ class U_DCI(nn.Module):
     #     self.sigm = nn.Sigmoid()
     #     self.disc = Discriminator(hidden_dim)
 
-    def __init__ (self, emb_module, hidden_dim, config_emb, device):
+    def __init__ (self, emb_module, hidden_dim, config_emb, attention, device):
         super(U_DCI, self).__init__()
         self.device = device
         self.read = AvgReadout()
         self.sigm = nn.Sigmoid()
         self.disc = Discriminator(hidden_dim)
 
-        if emb_module == 'U_GCN':
-            self.module = U_GCN(config_emb['input_dim'], config_emb['out_features'], config_emb['final_features'], config_emb['dropout'], config_emb['alpha'], config_emb['nheads'])
-        elif emb_module == 'GIN':
-            self.module = GraphCNN(config_emb['num_layers'], config_emb['num_mlp_layers'], config_emb['input_dim'], config_emb['hidden_dim'], config_emb['neighbor_pooling_type'], device)
-        elif emb_module == 'GCN':
-            self.module = GCN(config_emb['input_dim'], config_emb['nhid'], config_emb['out'], config_emb['dropout'])
-        elif emb_module == 'GAT':
-            self.module = GAT(config_emb['input_dim'], config_emb['nhid'], config_emb['out'], config_emb['dropout'])
-        elif emb_module == 'GraphSAGE':
-            self.module = GraphSAGE(config_emb['input_dim'], config_emb['nhid'], config_emb['out'], config_emb['dropout'])
+        module = {
+            'U_GCN': U_GCN,
+            'GIN': GraphCNN,
+            'GCN': GCN,
+            'GAT': GAT,
+            'GraphSAGE': GraphSAGE
+        }
+        self.module = module[emb_module](config_emb, attention, device)
+
+        # if emb_module == 'U_GCN':
+        #     self.module = U_GCN(config_emb['input_dim'], config_emb['out_features'], config_emb['final_features'], config_emb['dropout'], config_emb['alpha'], config_emb['nheads'])
+        # elif emb_module == 'GIN':
+        #     self.module = GraphCNN(config_emb['num_layers'], config_emb['num_mlp_layers'], config_emb['input_dim'], config_emb['hidden_dim'], config_emb['neighbor_pooling_type'], device)
+        # elif emb_module == 'GCN':
+        #     self.module = GCN(config_emb['input_dim'], config_emb['nhid'], config_emb['out'], config_emb['dropout'])
+        # elif emb_module == 'GAT':
+        #     self.module = GAT(config_emb['input_dim'], config_emb['nhid'], config_emb['out'], config_emb['dropout'])
+        # elif emb_module == 'GraphSAGE':
+        #     self.module = GraphSAGE(config_emb['input_dim'], config_emb['nhid'], config_emb['out'], config_emb['dropout'])
 
 
 

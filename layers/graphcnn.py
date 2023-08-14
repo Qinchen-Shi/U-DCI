@@ -2,11 +2,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from layers.mlp import MLP
+from .mlp import MLP
+from .attention import Attention
 
 # 这是作者修改过的代码，合理怀疑是看了DGI为了改DCI套的GIN
 class GraphCNN(nn.Module):
-    def __init__(self, num_layers, num_mlp_layers, input_dim, hidden_dim, neighbor_pooling_type, device):
+    # def __init__(self, num_layers, num_mlp_layers, input_dim, hidden_dim, neighbor_pooling_type, device):
+    def __init__(self, config_emb, attention, device):
         '''
             num_layers: number of layers in the neural networks
             num_mlp_layers: number of layers in mlps (EXCLUDING the input layer)
@@ -19,8 +21,10 @@ class GraphCNN(nn.Module):
         super(GraphCNN, self).__init__()
 
         self.device = device
-        self.num_layers = num_layers
-        self.neighbor_pooling_type = neighbor_pooling_type
+        self.num_layers = config_emb['num_layers']
+        self.neighbor_pooling_type = config_emb['neighbor_pooling_type']
+        self.attention = attention
+        self.att_module = Attention(config_emb['hidden_dim'])
 
         ###List of MLPs
         self.mlps = torch.nn.ModuleList()
@@ -31,11 +35,13 @@ class GraphCNN(nn.Module):
         # 这里做了一个loop控制当前的model是输入层还是中间层
         for layer in range(self.num_layers):
             if layer == 0:
-                self.mlps.append(MLP(num_mlp_layers, input_dim, hidden_dim, hidden_dim))
+                # self.mlps.append(MLP(num_mlp_layers, input_dim, hidden_dim, hidden_dim))
+                self.mlps.append(MLP(config_emb['num_mlp_layers'], config_emb['input_dim'], config_emb['hidden_dim'], config_emb['hidden_dim']))
             else:
-                self.mlps.append(MLP(num_mlp_layers, hidden_dim, hidden_dim, hidden_dim))
+                # self.mlps.append(MLP(num_mlp_layers, hidden_dim, hidden_dim, hidden_dim))
+                self.mlps.append(MLP(config_emb['num_mlp_layers'], config_emb['hidden_dim'], config_emb['hidden_dim'], config_emb['hidden_dim']))
 
-            self.batch_norms.append(nn.BatchNorm1d(hidden_dim)) # 这句是输出层
+            self.batch_norms.append(nn.BatchNorm1d(config_emb['hidden_dim'])) # 这句是输出层
 
     def next_layer(self, h, layer, padded_neighbor_list = None, Adj_block = None):
         ###pooling neighboring nodes and center nodes altogether  
@@ -60,7 +66,13 @@ class GraphCNN(nn.Module):
     
     def forward(self, feats, adj):
         h = feats
-        for layer in range(self.num_layers):
-            h = self.next_layer(h, layer, Adj_block = adj)
+        
+        if self.attention:
+            for layer in range(self.num_layers):
+                h = self.next_layer(h, layer, Adj_block = adj)
+                h, _ = self.att_module(h)
+        else:
+            for layer in range(self.num_layers):
+                h = self.next_layer(h, layer, Adj_block = adj)
 
         return h
